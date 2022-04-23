@@ -1,0 +1,17 @@
+node_modules
+docs
+.DS_Store
+npm-debug.log
+coverage
+*~
+.idea
+.nyc_output
+
+# build
+dist/*
+
+# vscode
+.vscode/
+
+# gitkeep
+!.gitkeep
