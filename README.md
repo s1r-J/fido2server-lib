@@ -1,5 +1,7 @@
 # @s1r-j/fido2server-lib
 
+[![npm version](https://badge.fury.io/js/@s1r-j%2Ffido2server-lib.svg)](https://badge.fury.io/js/@s1r-j%2Ffido2server-lib) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 Module to help implement FIDO2 server.
 
 ## Description
