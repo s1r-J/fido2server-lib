@@ -1,5 +1,4 @@
 import axios from 'axios';
-import crypto from 'crypto';
 import dayjs from 'dayjs';
 import parseCoseKey from 'parse-cosekey';
 import rs from 'jsrsasign';
@@ -49,24 +48,32 @@ class CertificateUtils {
       throw new Error('This alg is not supported.: ' + alg);
     }
 
-    if (cosealg.name === 'EdDSA') {
-      return crypto.verify(cosealg.nodeCryptoHashAlg, Buffer.concat([authData, clientDataJSONHash]), pem, sig);
-    }
+    return parseCoseKey.Verifier.verifyWithPEM(
+      Buffer.concat([authData, clientDataJSONHash]),
+      sig,
+      pem,
+      cosealg.name,
+      cosealg.nodeCryptoHashAlg || undefined
+    );
 
-    const verify = crypto.createVerify(cosealg.nodeCryptoHashAlg);
-    verify.update(authData).update(clientDataJSONHash);
-    if (cosealg.name.startsWith('PS')) {
-      return verify.verify(
-        {
-          key: pem,
-          padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
-          saltLength: crypto.constants.RSA_PSS_SALTLEN_DIGEST,
-        },
-        sig
-      );
-    } else {
-      return verify.verify(pem, sig);
-    }
+    // if (cosealg.name === 'EdDSA') {
+    //   return crypto.verify(cosealg.nodeCryptoHashAlg, Buffer.concat([authData, clientDataJSONHash]), pem, sig);
+    // }
+
+    // const verify = crypto.createVerify(cosealg.nodeCryptoHashAlg || 'sha256');
+    // verify.update(authData).update(clientDataJSONHash);
+    // if (cosealg.name.startsWith('PS')) {
+    //   return verify.verify(
+    //     {
+    //       key: pem,
+    //       padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+    //       saltLength: crypto.constants.RSA_PSS_SALTLEN_DIGEST,
+    //     },
+    //     sig
+    //   );
+    // } else {
+    //   return verify.verify(pem, sig);
+    // }
   }
 
   static async verifyCertificateChain(certificatePEMs: string[], rootCertificatePEM?: string): Promise<boolean> {
