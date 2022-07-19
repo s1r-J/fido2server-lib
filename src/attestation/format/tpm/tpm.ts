@@ -424,7 +424,7 @@ class TpmFormat extends FormatBase {
       throw new FslUnsupportedError('This alg is not supported.: ' + alg);
     }
 
-    const verify = crypto.createVerify(cosealg.nodeCryptoHashAlg);
+    const verify = crypto.createVerify(cosealg.nodeCryptoHashAlg || 'sha256');
     verify.update(certInfo);
 
     return verify.verify(pem, sig);
@@ -498,6 +498,9 @@ class TpmFormat extends FormatBase {
   }
 
   private parsePubArea() {
+    if (this.pubArea == null) {
+      throw new FslFormatVerifyError('Data is not enough', TpmFormat.getName());
+    }
     const pubAreaBuffer = Buffer.from(this.pubArea);
     let bufferStart = 0;
 
