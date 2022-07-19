@@ -55,25 +55,6 @@ class CertificateUtils {
       cosealg.name,
       cosealg.nodeCryptoHashAlg || undefined
     );
-
-    // if (cosealg.name === 'EdDSA') {
-    //   return crypto.verify(cosealg.nodeCryptoHashAlg, Buffer.concat([authData, clientDataJSONHash]), pem, sig);
-    // }
-
-    // const verify = crypto.createVerify(cosealg.nodeCryptoHashAlg || 'sha256');
-    // verify.update(authData).update(clientDataJSONHash);
-    // if (cosealg.name.startsWith('PS')) {
-    //   return verify.verify(
-    //     {
-    //       key: pem,
-    //       padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
-    //       saltLength: crypto.constants.RSA_PSS_SALTLEN_DIGEST,
-    //     },
-    //     sig
-    //   );
-    // } else {
-    //   return verify.verify(pem, sig);
-    // }
   }
 
   static async verifyCertificateChain(certificatePEMs: string[], rootCertificatePEM?: string): Promise<boolean> {
