@@ -70,45 +70,6 @@ class CertificateUtils {
   }
 
   static async verifyCertificateChain(certificatePEMs: string[], rootCertificatePEM?: string): Promise<boolean> {
-    // TODO update @types/jsrsasign
-    const getGeneralNames = (x509, h) => {
-      const aIdx = rs.ASN1HEX.getChildIdx(h, 0);
-      const result = [];
-      for (let i = 0; i < aIdx.length; i++) {
-        const gnParam = x509.getGeneralName(rs.ASN1HEX.getTLV(h, aIdx[i]));
-        if (gnParam !== undefined) result.push(gnParam);
-      }
-      return result;
-    };
-    const getDistributionPointName = function (x509: rs.X509, h: string) {
-      const result = {
-        full: {},
-      };
-      const a = rs.ASN1HEX.getChildIdx(h, 0);
-      for (let i = 0; i < a.length; i++) {
-        const tag = h.substr(a[i], 2);
-        const hTLV = rs.ASN1HEX.getTLV(h, a[i]);
-        if (tag == 'a0') {
-          result.full = getGeneralNames(x509, hTLV);
-        }
-      }
-      return result;
-    };
-
-    const getDistributionPoint = function (x509: rs.X509, h: string) {
-      const result = {
-        dpname: {},
-      };
-      const a = rs.ASN1HEX.getChildIdx(h, 0);
-      for (let i = 0; i < a.length; i++) {
-        const tag = h.substr(a[i], 2);
-        const hTLV = rs.ASN1HEX.getTLV(h, a[i]);
-        if (tag == 'a0') {
-          result.dpname = getDistributionPointName(x509, hTLV);
-        }
-      }
-      return result;
-    };
     const findExtCRLDistributionPoints = function (x509: rs.X509) {
       const info = x509.getExtInfo('cRLDistributionPoints');
       if (info === undefined) {
@@ -118,14 +79,13 @@ class CertificateUtils {
 
       const result = {
         extname: 'cRLDistributionPoints',
-        array: [],
+        array: [] as rs.DistributionPoint[],
         critical: !!info.critical,
       };
 
       const a = rs.ASN1HEX.getChildIdx(hExtV, 0);
       for (let i = 0; i < a.length; i++) {
-        const hTLV = rs.ASN1HEX.getTLV(hExtV, a[i]);
-        result.array.push(getDistributionPoint(x509, hTLV));
+        result.array.push(x509.getDistributionPoint(rs.ASN1HEX.getTLV(hExtV, a[i])));
       }
 
       return result;
@@ -135,15 +95,14 @@ class CertificateUtils {
     if (rootCertificatePEM != null) {
       targetCertificatePEMs.push(rootCertificatePEM);
     }
-    const rsCerts = [];
+    const rsCerts = [] as rs.X509[];
     let crlSNs: string[] = [];
     for (const pem of targetCertificatePEMs) {
-      const cert = new rs.X509();
-      cert.readCertPEM(pem);
+      const cert = new rs.X509(pem);
       rsCerts.push(cert);
 
       const crlDPs = findExtCRLDistributionPoints(cert);
-      let crlURIs = [];
+      let crlURIs = [] as any[];
       if (crlDPs != null) {
         const dpArrayInArray = crlDPs.array.map((dp) => {
           if (dp.dpname == null || dp.dpname.full == null) {
@@ -173,7 +132,7 @@ class CertificateUtils {
           const crl = new rs.X509CRL(crlPEM);
           const revSNs =
             crl.getRevCertArray().map((revCert) => {
-              return revCert.sn.hex;
+              return revCert.sn;
             }) || [];
 
           return revSNs;
