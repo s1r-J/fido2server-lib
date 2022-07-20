@@ -53,7 +53,7 @@
     "str2ab": "^1.1.0"
   },
   "devDependencies": {
-    "@types/jsrsasign": "^10.5.1",
+    "@types/jsrsasign": "^10.5.2",
     "@types/lodash.get": "^4.4.6",
     "@types/node": "^14.17.0",
     "@types/psl": "^1.1.0",
