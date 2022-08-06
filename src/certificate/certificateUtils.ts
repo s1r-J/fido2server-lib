@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import parseCoseKey from 'parse-cosekey';
 import rs from 'jsrsasign';
 import ConvertUtils from '../util/convertUtils';
+import crypto from 'crypto';
 
 class CertificateUtils {
   private constructor() {
@@ -46,6 +47,10 @@ class CertificateUtils {
     const cosealg = parseCoseKey.CoseKey.COSEAlgorithm.fromValue(alg);
     if (!cosealg) {
       throw new Error('This alg is not supported.: ' + alg);
+    }
+    if (alg === -8) {
+      // TODO EdDSA verification in parse-cosekey module has bug
+      return crypto.verify(null, Buffer.concat([authData, clientDataJSONHash]), pem, sig);
     }
 
     return parseCoseKey.Verifier.verifyWithPEM(
