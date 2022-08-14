@@ -13,6 +13,8 @@ Also I tests interoperability between server and authenticator(Windows Hello).
 
 ### Attestation
 
+Supported attestations is below.
+
 - None
 - Packed
 - TPM
@@ -22,6 +24,8 @@ Also I tests interoperability between server and authenticator(Windows Hello).
 - Apple
 
 ### Algorithm
+
+Supported algorithms is below.
 
 - ES256(`-7`)
 - RS256(`-257`)
@@ -35,6 +39,19 @@ Also I tests interoperability between server and authenticator(Windows Hello).
 - ES512(`-36`)
 - ES256K(`-47`)
 - EdDSA(`-8`)
+
+### WebAuthn extensions
+
+Supported [WebAuthn extensions](https://www.w3.org/TR/webauthn-2/#sctn-extensions) is below.
+
+Note: Test is not performed.
+
+- FIDO AppID Extension (appid)
+- FIDO AppID Exclusion Extension (appidExclude)
+- User Verification Method Extension (uvm)
+- Credential Properties Extension (credProps)
+- Large blob storage extension (largeBlob)
+- Credential Protection extension (credProtect)
 
 ## Demo
 
@@ -64,15 +81,13 @@ const {
 
 CommonJS
 
-```
+```javascript
 const FSL = require('@s1r-j/fido2server-lib');
 ```
 
-## Alternatives
-
-- [fido2-lib](https://www.npmjs.com/package/fido2-lib)
-
 ## Install
+
+[npm](https://www.npmjs.com/package/@s1r-j/fido2server-lib)
 
 ```
 npm i @s1r-j/fido2server-lib
@@ -84,8 +99,6 @@ This module has many issues.
 
 - No tests
 - No documents and not enough typescript comments
-- No [WebAuthn extensions](https://www.w3.org/TR/webauthn-2/#sctn-extensions)
-  - Although authenticator extensions in authenticator data are parsed.
 - TODOs in source
 
 etc...

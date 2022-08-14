@@ -23,7 +23,7 @@ export interface FslPublicKeyCredentialCreationOptions {
   /** intended for use by Relying Parties that wish to express their preference for attestation conveyance */
   attestation?: AttestationConveyancePreference;
   /** additional parameters requesting additional processing by the client and authenticator */
-  extensions?: AuthenticationExtensionsClientInputs;
+  extensions?: FslRegistrationExtensionsClientInputs;
 }
 
 export interface FslEncodePublicKeyCredentialCreationOptions {
@@ -180,7 +180,6 @@ export interface FslClientData {
   challenge: string;
   origin: string;
   crossOrigin?: string;
-  // clientExtensions?: any; // TODO here?
   tokenBinding?: FslTokenBinding;
 }
 
@@ -207,6 +206,7 @@ export interface FslAttestationExpectation {
   algs: number[];
   useMetadataService?: boolean;
   metadataEntry?: FslJSONObject;
+  extensions?: FslRegistrationExtensionsClientInputs;
 }
 
 export interface FslEncodeAttestationExpectation {
@@ -218,6 +218,7 @@ export interface FslEncodeAttestationExpectation {
   algs: number[];
   useMetadataService?: boolean;
   metadataEntry?: FslJSONObject;
+  extensions?: FslRegistrationExtensionsClientInputs;
 }
 
 export type FslAuthenticatorDataFlag = 'UserPresent' | 'UserVerified' | 'AttestedCredentialData' | 'ExtensionData';
@@ -252,7 +253,12 @@ export interface FslAttestationResult {
     flagsED?: boolean;
   };
   coseCredentialPublicKey?: Map<number, any>;
-  extensions?: any; // CBOR [RFC8949] map with extension identifiers as keys, and authenticator extension outputs as values
+  extensions?: {
+    map: Map<string, any>; // CBOR [RFC8949] map with extension identifiers as keys, and authenticator extension outputs as values
+    parsed: {
+      [key: string]: any;
+    };
+  };
   aaguid?: {
     buffer: Buffer;
     uuid?: string;
@@ -379,6 +385,8 @@ export interface FslRequestOptionsEasySetting {
   rpId?: string;
 
   userVerification?: UserVerificationRequirement;
+
+  extensions?: FslAuthenticationExtensionsClientInputs;
 }
 
 export interface FslAssertionPublicKeyCredential {
@@ -423,6 +431,7 @@ export interface FslAssertionExpectation {
   flags?: Set<FslAuthenticatorDataFlag>;
   storedSignCount: number;
   strictSignCount?: boolean;
+  extensions?: FslAuthenticationExtensionsClientInputs;
 }
 
 export interface FslAssertionResult {
@@ -457,7 +466,12 @@ export interface FslAssertionResult {
     base64url: string;
   };
   coseCredentialPublicKey?: any;
-  extensions?: any; // CBOR [RFC8949] map with extension identifiers as keys, and authenticator extension outputs as values
+  extensions?: {
+    map: Map<string, any>; // CBOR [RFC8949] map with extension identifiers as keys, and authenticator extension outputs as values
+    parsed: {
+      [key: string]: any;
+    };
+  };
   clientDataJSONHash?: Buffer;
   signCount?: number;
   greaterThanStoredSignCount?: boolean;
@@ -522,7 +536,34 @@ export interface FslParsedCertInfo {
 }
 
 export interface jwk {
-  [key: string]: any;
+  kty?: string;
+  use?: string;
+  key_ops?: string[];
+  alg?: string;
+  kid?: string;
+  x5u?: string;
+  x5c?: string[];
+  x5t?: string;
+  'x5t#S256'?: string;
+  crv?: string;
+  x?: string;
+  y?: string;
+  d?: string;
+  n?: string;
+  e?: string;
+  p?: string;
+  q?: string;
+  dp?: string;
+  dq?: string;
+  qi?: string;
+  oth?: {
+    r?: string;
+    d?: string;
+    t?: string;
+  }[];
+  k?: string;
+  ext?: boolean;
+  [key: string]: unknown;
 }
 
 export interface FslBaseErrorOptions {
@@ -535,4 +576,118 @@ export interface FslVerifyErrorOptions {
   error?: Error;
   actual?: any;
   expect?: any;
+}
+
+export type CredentialProtectionPolicy =
+  | 'userVerificationOptional'
+  | 'userVerificationOptionalWithCredentialIDList'
+  | 'userVerificationRequired';
+
+export type LargeBlobSupport = 'required' | 'preferred';
+
+export interface FslRegistrationExtensionsClientInputs {
+  appidExclude?: string;
+
+  uvm?: boolean;
+
+  credProps?: boolean;
+
+  credentialProtectionPolicy?: CredentialProtectionPolicy;
+  enforceCredentialProtectionPolicy?: boolean;
+
+  largeBlob?: {
+    support?: LargeBlobSupport;
+  };
+
+  /**
+   * Not supported.
+   */
+  // credBlob?: ArrayBuffer;
+
+  /**
+   * Not supported.
+   */
+  // authnSel?: (ArrayBuffer | ArrayBufferView)[];
+
+  /**
+   * Not supported.
+   */
+  // exts?: boolean;
+
+  /**
+   * Not supported.
+   */
+  // uvi?: boolean;
+
+  /**
+   * Not supported.
+   */
+  // loc?: boolean;
+
+  /**
+   * Not supported.
+   */
+  // largeBlobKey?: boolean;
+
+  /**
+   * Not supported.
+   */
+  // minPinLength?: boolean;
+
+  /**
+   * Not supported.
+   */
+  // hmacCreateSecret?: boolean;
+}
+
+export interface FslAuthenticationExtensionsClientInputs {
+  appid?: string;
+
+  uvm?: boolean;
+
+  largeBlob?: {
+    read: boolean;
+    write: ArrayBufferView | ArrayBuffer;
+  };
+
+  /**
+   * Not supported.
+   */
+  // getCredBlob?: boolean;
+
+  /**
+   * Not supported.
+   */
+  // txAuthSimple?: string;
+
+  /**
+   * Not supported.
+   */
+  // txAuthGeneric?: {
+  //   contentType: string;
+  //   content: ArrayBuffer;
+  // };
+
+  /**
+   * Not supported.
+   */
+  // uvi?: boolean;
+
+  /**
+   * Not supported.
+   */
+  // loc?: boolean;
+
+  /**
+   * Not supported.
+   */
+  // largeBlobKey?: boolean;
+
+  /**
+   * Not supported.
+   */
+  // hmacGetSecret?: {
+  //   salt1: ArrayBuffer;
+  //   salt2?: ArrayBuffer;
+  // };
 }

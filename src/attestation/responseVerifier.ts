@@ -18,6 +18,7 @@ import ConvertUtils from '../util/convertUtils';
 import MdsUtils from '../mds/mdsUtils';
 import MdsVerifier from '../mds/mdsVerifier';
 import FslBaseError from '../error/baseError';
+import ExtensionParser from '../extension/extensionParser';
 
 class AttestationResponseVerifier {
   private credential: FslAttestationPublicKeyCredential;
@@ -56,7 +57,14 @@ class AttestationResponseVerifier {
     };
 
     try {
-      // TODO rawId
+      if (this.credential.rawId != null) {
+        if (this.credential.id !== str2ab.arraybuffer2base64url(this.credential.rawId)) {
+          throw new FslAttestationVerifyError('rawId not equals to id', {
+            actual: str2ab.arraybuffer2base64url(this.credential.rawId),
+            expect: this.credential.id,
+          });
+        }
+      }
 
       // step5
       const response = this.credential.response;
@@ -206,13 +214,24 @@ class AttestationResponseVerifier {
       const credentialPublicKey: Buffer = attestedCredentialData.slice(16 + 2 + credentialIdLengthNumber); // credentialPublicKey and extensions
       const decodedCredentialPublicKey: any[] = cbor.decodeAllSync(credentialPublicKey);
       result.coseCredentialPublicKey = decodedCredentialPublicKey[0];
+      if (result.coseCredentialPublicKey == null) {
+        throw new FslAttestationVerifyError('COSE public key is not provided.');
+      }
       if (result.flags.flagsED) {
-        result.extensions = decodedCredentialPublicKey[1];
-        // TODO parse extension
+        result.extensions = {
+          map: decodedCredentialPublicKey[1],
+          parsed: {},
+        };
+        const extensionParser = new ExtensionParser();
+        result.extensions.parsed = extensionParser.parseAttestationExtensions(
+          result.extensions.map,
+          this.expectation,
+          result
+        );
       }
       let jwkResult: jwk;
       try {
-        jwkResult = KeyConvertUtils.cose2jwk(decodedCredentialPublicKey[0]);
+        jwkResult = KeyConvertUtils.cose2jwk(result.coseCredentialPublicKey);
       } catch (err) {
         throw new FslAttestationVerifyError('This COSE cannot not convert to JWK.: ' + err.msg, {
           error: err,
@@ -220,7 +239,7 @@ class AttestationResponseVerifier {
       }
       result.jwk = jwkResult;
       result.alg = Number(result.coseCredentialPublicKey.get(3));
-      const pem: string = await KeyConvertUtils.cose2pem(decodedCredentialPublicKey[0]);
+      const pem: string = await KeyConvertUtils.cose2pem(result.coseCredentialPublicKey);
       result.pem = pem;
       if (!this.expectation.algs.includes(result.alg)) {
         throw new FslAttestationVerifyError('This public key alg does not match expectation.', {

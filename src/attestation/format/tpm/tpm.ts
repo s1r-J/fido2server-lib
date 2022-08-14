@@ -129,6 +129,10 @@ class TpmFormat extends FormatBase {
       throw new FslFormatVerifyError('TPM version must be "2.0"', TpmFormat.getName());
     }
 
+    if (this.result == null) {
+      throw new FslFormatVerifyError('Data is not enough', TpmFormat.getName());
+    }
+
     // Check that the “alg” field is set to the equivalent value to the signatureAlgorithm in the metadata. You can find useful conversion tables in the appendix.
     // https://medium.com/webauthnworks/verifying-fido-tpm2-0-attestation-fc7243847498
     // TODO is need?
@@ -151,7 +155,6 @@ class TpmFormat extends FormatBase {
 
     const parsedPubArea = this.parsePubArea();
 
-    // TODO Verify that the public key specified by the parameters fields of pubArea is identical to the credentialPublicKey in the attestedCredentialData in authenticatorData.
     if (parsedPubArea.parameters != null && parsedPubArea.parameters.symmetric !== 'TPM_ALG_NULL') {
       throw new FslFormatVerifyError(
         'pubArea parameters symmetric must be null',
@@ -166,13 +169,13 @@ class TpmFormat extends FormatBase {
       throw new FslFormatVerifyError('Public key in authData does not exist.', TpmFormat.getName());
     }
     const c = this.result.jwk;
-    let publicKey: Buffer;
+    let publicKey: Buffer = Buffer.alloc(1);
     if (c.kty === 'RSA') {
-      publicKey = Buffer.from(str2ab.base64url2arraybuffer(c.n));
+      publicKey = Buffer.from(str2ab.base64url2arraybuffer(c.n || ''));
     } else if (c.kty === 'EC') {
       publicKey = Buffer.concat([
-        Buffer.from(str2ab.base64url2arraybuffer(c.x)),
-        Buffer.from(str2ab.base64url2arraybuffer(c.y)),
+        Buffer.from(str2ab.base64url2arraybuffer(c.x || '')),
+        Buffer.from(str2ab.base64url2arraybuffer(c.y || '')),
       ]);
     }
     if (!FormatBase.isEqualBinary(parsedPubArea.unique, publicKey)) {
@@ -199,14 +202,27 @@ class TpmFormat extends FormatBase {
     }
 
     // Verify that extraData is set to the hash of attToBeSigned using the hash algorithm employed in "alg".
+    if (this.result.authData == null || this.result.clientDataJSONHash == null) {
+      throw new FslFormatVerifyError('Data is not enough', TpmFormat.getName());
+    }
     const attToBeSigned = Buffer.concat([this.result.authData, this.result.clientDataJSONHash]);
-    const coseAlgHashAlg = parseCoseKey.CoseKey.COSEAlgorithm.fromValue(this.alg).nodeCryptoHashAlg;
+    if (this.alg == null) {
+      throw new FslFormatVerifyError('Data is not enough', TpmFormat.getName());
+    }
+    const coseAlg = parseCoseKey.CoseKey.COSEAlgorithm.fromValue(this.alg);
+    if (coseAlg == null) {
+      throw new FslFormatVerifyError(`Cannot convert to COSE Algorithm: ${this.alg}`, TpmFormat.getName());
+    }
+    const coseAlgHashAlg = coseAlg.nodeCryptoHashAlg || 'sha256';
     const attToBeSignedHash = crypto.createHash(coseAlgHashAlg).update(attToBeSigned).digest();
     if (!FormatBase.isEqualBinary(parsedCertInfo.extraData, attToBeSignedHash)) {
       throw new FslFormatVerifyError('certInfo extraData is not equal to hash of attToBeSigned.', TpmFormat.getName());
     }
 
     // Verify that attested contains a TPMS_CERTIFY_INFO structure as specified in [TPMv2-Part2] section 10.12.3, whose name field contains a valid Name for pubArea, as computed using the algorithm in the nameAlg field of pubArea using the procedure specified in [TPMv2-Part1] section 16.
+    if (this.pubArea == null) {
+      throw new FslFormatVerifyError('Data is not enough', TpmFormat.getName());
+    }
     const authPolicyHash = crypto
       .createHash(TPM_ALG[parsedCertInfo.attestedName.slice(0, 2).readUInt16BE(0)].replace('TPM_ALG_', ''))
       .update(this.pubArea)
@@ -251,37 +267,26 @@ class TpmFormat extends FormatBase {
     }
 
     // The Subject Alternative Name extension MUST be set as defined in [TPMv2-EK-Profile] section 3.2.9.
-    // TODO update @types/jsrsasign
     const subjectAltNameInfo = aikCertX509.getExtInfo('subjectAltName');
     if (subjectAltNameInfo == null) {
       throw new FslFormatVerifyError('Subject Alternative Name is not set', TpmFormat.getName());
     }
-    const hExtV = jsrsasign.ASN1HEX.getTLV(aikCertX509.hex, subjectAltNameInfo.vidx);
-    const getGeneralNames = (x509, h) => {
-      const aIdx = jsrsasign.ASN1HEX.getChildIdx(h, 0);
-      const result = [];
-      for (let i = 0; i < aIdx.length; i++) {
-        const gnParam = x509.getGeneralName(jsrsasign.ASN1HEX.getTLV(h, aIdx[i]));
-        if (gnParam !== undefined) result.push(gnParam);
-      }
-      return result;
-    };
     const subjectAltName = {
       extname: 'subjectAltName',
       critical: !!subjectAltNameInfo.critical,
-      array: getGeneralNames(aikCertX509, hExtV),
+      array: aikCertX509.getGeneralNames(jsrsasign.ASN1HEX.getTLV(aikCertX509.hex, subjectAltNameInfo.vidx)) || [],
     };
     // In accordance with RFC 5280[11], this extension MUST be critical if subject is empty and SHOULD be non-critical if subject is non-empty.
     if (!subjectAltName.critical) {
       throw new FslFormatVerifyError('Subject Alternative Name is not critical', TpmFormat.getName());
     }
     const dn = subjectAltName.array.find((elem) => {
-      return elem.dn != null;
+      return elem != null && elem['dn'] != null;
     });
     if (dn == null) {
       throw new FslFormatVerifyError('Subject Alternative Name is not valid', TpmFormat.getName());
     }
-    const dnArray = dn.dn.array;
+    const dnArray = dn['dn'].array;
     const findSubjectAltName = function (
       dnList: any[],
       type: string
@@ -331,7 +336,7 @@ class TpmFormat extends FormatBase {
       const hExtV = jsrsasign.ASN1HEX.getTLV(x509.hex, info.vidx);
       const result = {
         extname: 'extKeyUsage',
-        array: [],
+        array: [] as string[],
         critical: !!info.critical,
       };
       const a = jsrsasign.ASN1HEX.getChildIdx(hExtV, 0);
@@ -357,7 +362,7 @@ class TpmFormat extends FormatBase {
     // An Authority Information Access (AIA) extension with entry id-ad-ocsp and a CRL Distribution Point extension [RFC5280] are both OPTIONAL as the status of many attestation certificates is available through metadata services.
     // TODO ocsp
     const aiaInfo = aikCertX509.getExtAIAInfo();
-    const ocsp: string[] = aiaInfo.ocsp;
+    const ocsp: string[] = aiaInfo != null ? aiaInfo.ocsp : [];
 
     // If aikCert contains an extension with OID 1.3.6.1.4.1.45724.1.1.4 (id-fido-gen-ce-aaguid) verify that the value of this extension matches the aaguid in authenticatorData.
     const oidFidoGenCeAaguidExt = aikCertX509Peculiar.getExtension(TpmFormat.OID_ID_FIDO_GEN_CE_AAGUID);
@@ -418,7 +423,7 @@ class TpmFormat extends FormatBase {
       throw new FslUnsupportedError('This alg is not supported.: ' + alg);
     }
 
-    const verify = crypto.createVerify(cosealg.nodeCryptoHashAlg);
+    const verify = crypto.createVerify(cosealg.nodeCryptoHashAlg || 'sha256');
     verify.update(certInfo);
 
     return verify.verify(pem, sig);
@@ -492,6 +497,9 @@ class TpmFormat extends FormatBase {
   }
 
   private parsePubArea() {
+    if (this.pubArea == null) {
+      throw new FslFormatVerifyError('Data is not enough', TpmFormat.getName());
+    }
     const pubAreaBuffer = Buffer.from(this.pubArea);
     let bufferStart = 0;
 

@@ -31,6 +31,7 @@ class AttestationExpectationBuilder {
       algs: options.pubKeyCredParams.map((p: FslPublicKeyCredentialParameters) => {
         return p.alg;
       }),
+      extensions: options.extensions,
     };
 
     return new AttestationExpectationBuilder(expectation);

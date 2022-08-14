@@ -11,17 +11,12 @@ class AttestationResponseParser {
   }
 
   static parse(credential: FslAttestationPublicKeyCredential): FslAttestationParseResult {
-    let rawId = credential.rawId;
-    if (credential.rawId != null) {
-      rawId = str2ab.base64url2arraybuffer(credential.id);
-    }
-    const credentialId =
-      {
-        arraybuffer: rawId,
-        base64url: credential.id,
-      } || undefined;
+    const credentialId = {
+      arraybuffer: credential.rawId || str2ab.base64url2arraybuffer(credential.id),
+      base64url: credential.id,
+    };
 
-    let challenge = undefined;
+    let challenge;
     if (credential.response != null && credential.response.clientDataJSON != null) {
       try {
         const jsonStr = base64url.decode(str2ab.arraybuffer2base64url(credential.response.clientDataJSON));
@@ -34,7 +29,7 @@ class AttestationResponseParser {
         throw new FslParseError('Failed to parse challenge', err);
       }
     }
-    let aaguid = undefined;
+    let aaguid;
     if (credential.response != null && credential.response.attestationObject != null) {
       try {
         const decodedAttestationObject: any[] = cbor.decodeAllSync(credential.response.attestationObject);

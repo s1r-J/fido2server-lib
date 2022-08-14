@@ -7,8 +7,10 @@ import {
   FslPublicKeyCredentialCreationOptions,
   FslPublicKeyCredentialDescriptor,
   FslPublicKeyCredentialParameters,
+  FslRegistrationExtensionsClientInputs,
 } from '../type';
 import FslValidationError from '../error/validationError';
+import ExtensionValidator from '../extension/extensionValidator';
 
 class AttestationCreationOptionsBuilder {
   options: FslPublicKeyCredentialCreationOptions;
@@ -16,10 +18,6 @@ class AttestationCreationOptionsBuilder {
   constructor(config: FslPublicKeyCredentialCreationOptions) {
     this.options = { ...config };
   }
-
-  // TODO able to both encode and arraybuffer
-  // static createByEncode(setting: FslCreationOptionsSetting): CreationOptionBuilder {
-  // }
 
   static easyCreate(setting: FslCreationOptionsEasySetting): AttestationCreationOptionsBuilder {
     let pubKeyCredParams: FslPublicKeyCredentialParameters[] = [];
@@ -81,7 +79,7 @@ class AttestationCreationOptionsBuilder {
     return this;
   }
 
-  extensions(extensions: AuthenticationExtensionsClientInputs): AttestationCreationOptionsBuilder {
+  extensions(extensions: FslRegistrationExtensionsClientInputs): AttestationCreationOptionsBuilder {
     this.options.extensions = extensions;
 
     return this;
@@ -92,7 +90,6 @@ class AttestationCreationOptionsBuilder {
    * @returns {boolean}
    * @throws {FslValidationError}
    */
-
   validate(): boolean {
     const errorMessages: string[] = [];
     if (this.options.rp.id !== 'localhost' && !psl.isValid(this.options.rp.id)) {
@@ -114,6 +111,14 @@ class AttestationCreationOptionsBuilder {
 
     if (this.options.challenge.byteLength < 16) {
       errorMessages.push('PublicKeyCredentialCreationOptions.challenge should be least 16 bytes.');
+    }
+
+    if (this.options.extensions != null) {
+      try {
+        ExtensionValidator.validateRegistrationExtensions(this.options.extensions);
+      } catch (error) {
+        errorMessages.push(`PublicKeyCredentialRequestOptions.allowCredentials is not valid: ${error.message}`);
+      }
     }
 
     if (errorMessages.length > 0) {

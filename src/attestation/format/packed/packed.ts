@@ -252,7 +252,7 @@ class PackedFormat extends FormatBase {
       isValidSignature = CertificateUtils.verifySignature(
         this.result.authData,
         this.result.clientDataJSONHash,
-        alg,
+        this.result.alg,
         this.result.pem,
         sig
       );
