@@ -14,7 +14,7 @@ class AssertionResponseParser {
       base64url: credential.id,
     };
 
-    let userHandle = undefined;
+    let userHandle;
     if (credential.response.userHandle != null) {
       userHandle = {
         arraybuffer: credential.response.userHandle,
@@ -22,7 +22,7 @@ class AssertionResponseParser {
       };
     }
 
-    let challenge = undefined;
+    let challenge;
     if (credential.response.clientDataJSON != null) {
       try {
         const jsonStr = base64url.decode(str2ab.arraybuffer2base64url(credential.response.clientDataJSON));
