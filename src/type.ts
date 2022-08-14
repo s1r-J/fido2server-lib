@@ -522,7 +522,34 @@ export interface FslParsedCertInfo {
 }
 
 export interface jwk {
-  [key: string]: any;
+  kty?: string;
+  use?: string;
+  key_ops?: string[];
+  alg?: string;
+  kid?: string;
+  x5u?: string;
+  x5c?: string[];
+  x5t?: string;
+  'x5t#S256'?: string;
+  crv?: string;
+  x?: string;
+  y?: string;
+  d?: string;
+  n?: string;
+  e?: string;
+  p?: string;
+  q?: string;
+  dp?: string;
+  dq?: string;
+  qi?: string;
+  oth?: {
+    r?: string;
+    d?: string;
+    t?: string;
+  }[];
+  k?: string;
+  ext?: boolean;
+  [key: string]: unknown;
 }
 
 export interface FslBaseErrorOptions {
