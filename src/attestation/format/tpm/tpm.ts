@@ -155,7 +155,6 @@ class TpmFormat extends FormatBase {
 
     const parsedPubArea = this.parsePubArea();
 
-    // TODO Verify that the public key specified by the parameters fields of pubArea is identical to the credentialPublicKey in the attestedCredentialData in authenticatorData.
     if (parsedPubArea.parameters != null && parsedPubArea.parameters.symmetric !== 'TPM_ALG_NULL') {
       throw new FslFormatVerifyError(
         'pubArea parameters symmetric must be null',
@@ -172,11 +171,11 @@ class TpmFormat extends FormatBase {
     const c = this.result.jwk;
     let publicKey: Buffer = Buffer.alloc(1);
     if (c.kty === 'RSA') {
-      publicKey = Buffer.from(str2ab.base64url2arraybuffer(c.n));
+      publicKey = Buffer.from(str2ab.base64url2arraybuffer(c.n || ''));
     } else if (c.kty === 'EC') {
       publicKey = Buffer.concat([
-        Buffer.from(str2ab.base64url2arraybuffer(c.x)),
-        Buffer.from(str2ab.base64url2arraybuffer(c.y)),
+        Buffer.from(str2ab.base64url2arraybuffer(c.x || '')),
+        Buffer.from(str2ab.base64url2arraybuffer(c.y || '')),
       ]);
     }
     if (!FormatBase.isEqualBinary(parsedPubArea.unique, publicKey)) {

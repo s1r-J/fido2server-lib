@@ -1,7 +1,9 @@
 import crypto from 'crypto';
 import str2ab from 'str2ab';
 import FslValidationError from '../error/validationError';
+import ExtensionValidator from '../extension/extensionValidator';
 import {
+  FslAuthenticationExtensionsClientInputs,
   FslEncodePublicKeyCredentialRequestOptions,
   FslPublicKeyCredentialDescriptor,
   FslPublicKeyCredentialRequestOptions,
@@ -14,10 +16,6 @@ class AssertionRequestOptionsBuilder {
   constructor(config: FslPublicKeyCredentialRequestOptions) {
     this.options = { ...config };
   }
-
-  // TODO able to both encode and arraybuffer
-  // static createByEncode(setting: FslCreationOptionsSetting): CreationOptionBuilder {
-  // }
 
   static easyCreate(setting: FslRequestOptionsEasySetting): AssertionRequestOptionsBuilder {
     const config: FslPublicKeyCredentialRequestOptions = {
@@ -54,7 +52,7 @@ class AssertionRequestOptionsBuilder {
     return this;
   }
 
-  extensions(extensions: AuthenticationExtensionsClientInputs): AssertionRequestOptionsBuilder {
+  extensions(extensions: FslAuthenticationExtensionsClientInputs): AssertionRequestOptionsBuilder {
     this.options.extensions = extensions;
 
     return this;
@@ -87,6 +85,14 @@ class AssertionRequestOptionsBuilder {
 
       if (!isValid) {
         errorMessages.push('PublicKeyCredentialRequestOptions.allowCredentials is not valid.');
+      }
+    }
+
+    if (this.options.extensions != null) {
+      try {
+        ExtensionValidator.validateAuthenticationExtensions(this.options.extensions);
+      } catch (error) {
+        errorMessages.push(`PublicKeyCredentialRequestOptions.allowCredentials is not valid: ${error.message}`);
       }
     }
 

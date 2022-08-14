@@ -11,6 +11,7 @@ import {
 } from '../type';
 import base64url from 'base64url';
 import FslBaseError from '../error/baseError';
+import ExtensionParser from '../extension/extensionParser';
 
 class AssertionResponseVerifier {
   private credential: FslAssertionPublicKeyCredential;
@@ -131,17 +132,9 @@ class AssertionResponseVerifier {
         this.verifyTokenBinding(clientData.tokenBinding);
       }
 
-      // step15
       result.authData.buffer = str2ab.arraybuffer2buffer(authData);
-      const rpIdHash: Buffer = result.authData.buffer.slice(0, 32);
-      result.rpIdHash = rpIdHash;
-      const expectRpIdHash = crypto.createHash('sha256').update(this.expectation.rpId).digest();
-      if (!rpIdHash.equals(expectRpIdHash)) {
-        throw new FslAssertionVerifyError('rpIdHash in response.authenticatorData is not match.', {
-          actual: result.authData.buffer,
-          expect: expectRpIdHash,
-        });
-      }
+      // step15
+      // step15 is processed after step17 because of appid extension
 
       // step16
       const flags: Buffer = result.authData.buffer.slice(32, 32 + 1);
@@ -195,12 +188,49 @@ class AssertionResponseVerifier {
         });
         result.coseCredentialPublicKey = decodedCredentialPublicKey[0];
         if (result.flags.flagsED) {
-          result.extensions = decodedCredentialPublicKey[1];
+          result.extensions = {
+            map: decodedCredentialPublicKey[1],
+            parsed: {},
+          };
+
+          const extensionParser = new ExtensionParser();
+          result.extensions.parsed = extensionParser.parseAssertionExtensions(
+            result.extensions.map,
+            this.expectation,
+            result
+          );
         }
       } else if (result.flags.flagsED) {
         const extensions: Buffer = result.authData.buffer.slice(32 + 1 + 4);
         const decodedExtensions: any[] = cbor.decodeAllSync(extensions);
-        result.extensions = decodedExtensions[0]; // TODO parse extension
+        result.extensions = {
+          map: decodedExtensions[0],
+          parsed: {},
+        };
+
+        const extensionParser = new ExtensionParser();
+        result.extensions.parsed = extensionParser.parseAssertionExtensions(
+          result.extensions.map,
+          this.expectation,
+          result
+        );
+      }
+
+      // step15
+      // step15 is processed after step17 because of appid extension
+      const rpIdHash: Buffer = result.authData.buffer.slice(0, 32);
+      result.rpIdHash = rpIdHash;
+      let expectRpIdHashUsingAppId = Buffer.from([]);
+      if (result.extensions != null && result.extensions.parsed.appid != null && result.extensions.parsed.appid.appid) {
+        // FIDO AppID extension is used
+        expectRpIdHashUsingAppId = result.extensions.parsed.appid.rpIdHashUsingAppId;
+      }
+      const expectRpIdHash = crypto.createHash('sha256').update(this.expectation.rpId).digest();
+      if (!rpIdHash.equals(expectRpIdHash) && !rpIdHash.equals(expectRpIdHashUsingAppId)) {
+        throw new FslAssertionVerifyError('rpIdHash in response.authenticatorData is not match.', {
+          actual: result.authData.buffer,
+          expect: expectRpIdHash,
+        });
       }
 
       // step18
