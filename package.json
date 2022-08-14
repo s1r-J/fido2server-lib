@@ -1,6 +1,6 @@
 {
   "name": "@s1r-j/fido2server-lib",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Module to help implement FIDO2 server.",
   "main": "index.js",
   "types": "./dist/index.d.ts",
@@ -21,10 +21,10 @@
   },
   "keywords": [
     "webauthn",
-    "fido2",
     "web authentication",
-    "authentication",
     "fido",
+    "fido2",
+    "authentication",
     "server"
   ],
   "author": "s1r-J",
@@ -36,6 +36,7 @@
   "bugs": {
     "url": "https://github.com/s1r-J/fido2server-lib/issues"
   },
+  "homepage": "https://github.com/s1r-J/fido2server-lib",
   "dependencies": {
     "@lapo/asn1js": "^1.2.3",
     "@peculiar/x509": "^1.3.2",
