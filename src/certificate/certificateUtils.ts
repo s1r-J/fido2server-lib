@@ -48,10 +48,6 @@ class CertificateUtils {
     if (!cosealg) {
       throw new Error('This alg is not supported.: ' + alg);
     }
-    if (alg === -8) {
-      // TODO EdDSA verification in parse-cosekey module has bug
-      return crypto.verify(null, Buffer.concat([authData, clientDataJSONHash]), pem, sig);
-    }
 
     return parseCoseKey.Verifier.verifyWithPEM(
       Buffer.concat([authData, clientDataJSONHash]),
