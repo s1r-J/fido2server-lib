@@ -6,7 +6,7 @@ import FslFormatVerifyError from '../../../error/formatVerifyError';
 import FslUnsupportedError from '../../../error/unsupportedError';
 import FormatBase from '../formatBase';
 import FormatVerifyResult from '../formatVerifyResult';
-import EqualUtils from '../../../utils/equalUtils';
+import EqualUtils from '../../../util/equalUtils';
 import CertificateUtils from '../../../certificate/certificateUtils';
 
 class AppleFormat extends FormatBase {

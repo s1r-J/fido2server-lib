@@ -4,7 +4,7 @@ import jsrsasign from 'jsrsasign';
 import { FslAttestationResult, FslAttestationExpectation } from '../../../type';
 import FormatBase from '../formatBase';
 import FormatVerifyResult from '../formatVerifyResult';
-import EqualUtils from '../../../utils/equalUtils';
+import EqualUtils from '../../../util/equalUtils';
 import CertificateUtils from '../../../certificate/certificateUtils';
 import Asn1DecodeUtils from '../../../key/asn1DecodeUtils';
 import FslFormatVerifyError from '../../../error/formatVerifyError';
