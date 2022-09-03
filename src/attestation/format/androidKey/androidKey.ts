@@ -4,7 +4,7 @@ import jsrsasign from 'jsrsasign';
 import { FslAttestationResult, FslAttestationExpectation } from '../../../type';
 import FormatBase from '../formatBase';
 import FormatVerifyResult from '../formatVerifyResult';
-import KeyUtils from '../../../key/keyUtils';
+import EqualUtils from '../../../utils/equalUtils';
 import CertificateUtils from '../../../certificate/certificateUtils';
 import Asn1DecodeUtils from '../../../key/asn1DecodeUtils';
 import FslFormatVerifyError from '../../../error/formatVerifyError';
@@ -60,7 +60,7 @@ class AndroidKeyFormat extends FormatBase {
     if (this.result.pem == null) {
       throw new FslFormatVerifyError('Credential public key does not exist', AndroidKeyFormat.getName());
     }
-    const matchCredCert = KeyUtils.isEqualPem(credCertPem, this.result.pem);
+    const matchCredCert = EqualUtils.equalPem(credCertPem, this.result.pem);
 
     // Verify attestationChallenge in extension is identical to clientDataJSONHash
     const pX509Cert = new x509.X509Certificate(credCertPem);

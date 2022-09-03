@@ -1,9 +1,9 @@
-class KeyUtils {
+class EqualUtils {
   private constructor() {
     // private
   }
 
-  static isEqualPem(a: string, b: string): boolean {
+  static equalPem(a: string, b: string): boolean {
     if (!a || !b) {
       return false;
     }
@@ -20,4 +20,4 @@ class KeyUtils {
   }
 }
 
-export default KeyUtils;
+export default EqualUtils;

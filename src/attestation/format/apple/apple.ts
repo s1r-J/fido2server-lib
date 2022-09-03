@@ -6,7 +6,7 @@ import FslFormatVerifyError from '../../../error/formatVerifyError';
 import FslUnsupportedError from '../../../error/unsupportedError';
 import FormatBase from '../formatBase';
 import FormatVerifyResult from '../formatVerifyResult';
-import KeyUtils from '../../../key/keyUtils';
+import EqualUtils from '../../../utils/equalUtils';
 import CertificateUtils from '../../../certificate/certificateUtils';
 
 class AppleFormat extends FormatBase {
@@ -71,7 +71,7 @@ class AppleFormat extends FormatBase {
     if (this.result.pem == null) {
       throw new FslFormatVerifyError('Credential public key does not exist', AppleFormat.getName());
     }
-    const isEqualSPK = KeyUtils.isEqualPem(publicKeyPem, this.result.pem);
+    const isEqualSPK = EqualUtils.equalPem(publicKeyPem, this.result.pem);
     if (!isEqualSPK) {
       throw new FslFormatVerifyError(
         'credential public key does not equal Subject Public Key of credCert',
