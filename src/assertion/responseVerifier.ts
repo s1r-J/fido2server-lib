@@ -44,6 +44,7 @@ class AssertionResponseVerifier {
               expect: this.expectation.userId,
             });
           }
+          result.userHandle = this.credential.response.userHandle;
         }
       } else {
         if (this.credential.response.userHandle) {
