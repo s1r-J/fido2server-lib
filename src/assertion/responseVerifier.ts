@@ -84,7 +84,7 @@ class AssertionResponseVerifier {
         }
         if (
           clientDataJSON.tokenBinding.status == null ||
-          !['present', 'supported', 'not-supported'].includes(clientDataJSON.tokenBinding)
+          !['present', 'supported', 'not-supported'].includes(clientDataJSON.tokenBinding.status)
         ) {
           throw new FslAssertionVerifyError(
             `response.clientDataJSON.tokenBinding.status is invalid: ${clientDataJSON.tokenBinding.status}`
@@ -130,6 +130,7 @@ class AssertionResponseVerifier {
 
       // step14
       if (this.expectation.tokenBinding) {
+        // TODO
         this.verifyTokenBinding(clientData.tokenBinding);
       }
 
