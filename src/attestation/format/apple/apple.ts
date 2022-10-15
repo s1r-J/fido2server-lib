@@ -3,7 +3,6 @@ import jsrsasign from 'jsrsasign';
 import * as x509 from '@peculiar/x509';
 import { FslAttestationResult, FslAttestationExpectation } from '../../../type';
 import FslFormatVerifyError from '../../../error/formatVerifyError';
-import FslUnsupportedError from '../../../error/unsupportedError';
 import FormatBase from '../formatBase';
 import FormatVerifyResult from '../formatVerifyResult';
 import EqualUtils from '../../../util/equalUtils';
@@ -29,10 +28,6 @@ class AppleFormat extends FormatBase {
   }
 
   async verify(): Promise<FormatVerifyResult> {
-    if (!this.result) {
-      throw new FslUnsupportedError('set result.');
-    }
-
     // Verify that attStmt is valid CBOR conforming to the syntax defined above and perform CBOR decoding on it to extract the contained fields.
     const decodedAttStmt = this.attStmt;
     const x5c = decodedAttStmt['x5c'] as Buffer[];
@@ -56,7 +51,7 @@ class AppleFormat extends FormatBase {
       return e.type === AppleFormat.NONCE_OID;
     });
 
-    if (nonceExt == null || !FormatBase.isEqualBinary(nonce, Buffer.from(nonceExt.value).slice(6, 38))) {
+    if (nonceExt == null || !EqualUtils.equalBinary(nonce, Buffer.from(nonceExt.value).slice(6, 38))) {
       throw new FslFormatVerifyError(
         'nonce is not equal',
         AppleFormat.getName(),

@@ -11,6 +11,7 @@ import FslFormatVerifyError from '../../../error/formatVerifyError';
 import FormatVerifyResult from '../formatVerifyResult';
 import Asn1DecodeUtils from '../../../key/asn1DecodeUtils';
 import CertificateUtils from '../../../certificate/certificateUtils';
+import EqualUtils from '../../../util/equalUtils';
 
 /**
  * The TCG maintains a registry of all algorithms that have an assigned algorithm ID.
@@ -115,6 +116,7 @@ class TpmFormat extends FormatBase {
     this.attStmt = attStmt;
     this.result = result;
     this.expectation = expectation;
+    this.configure = config;
 
     this.ver = this.attStmt['ver'];
     this.alg = this.attStmt['alg'];
@@ -178,7 +180,7 @@ class TpmFormat extends FormatBase {
         Buffer.from(str2ab.base64url2arraybuffer(c.y || '')),
       ]);
     }
-    if (!FormatBase.isEqualBinary(parsedPubArea.unique, publicKey)) {
+    if (!EqualUtils.equalBinary(parsedPubArea.unique, publicKey)) {
       throw new FslFormatVerifyError('pubArea.unique is not equal to public key in authData.', TpmFormat.getName());
     }
 
@@ -215,7 +217,7 @@ class TpmFormat extends FormatBase {
     }
     const coseAlgHashAlg = coseAlg.nodeCryptoHashAlg || 'sha256';
     const attToBeSignedHash = crypto.createHash(coseAlgHashAlg).update(attToBeSigned).digest();
-    if (!FormatBase.isEqualBinary(parsedCertInfo.extraData, attToBeSignedHash)) {
+    if (!EqualUtils.equalBinary(parsedCertInfo.extraData, attToBeSignedHash)) {
       throw new FslFormatVerifyError('certInfo extraData is not equal to hash of attToBeSigned.', TpmFormat.getName());
     }
 
@@ -228,7 +230,7 @@ class TpmFormat extends FormatBase {
       .update(this.pubArea)
       .digest();
     if (
-      !FormatBase.isEqualBinary(
+      !EqualUtils.equalBinary(
         parsedCertInfo.attestedName,
         Buffer.concat([parsedCertInfo.attestedName.slice(0, 2), authPolicyHash])
       )
@@ -371,7 +373,7 @@ class TpmFormat extends FormatBase {
         Buffer.from(oidFidoGenCeAaguidExt.rawData).toString('base64')
       );
       const oidFidoGenCeAaguid = _get(decodedOidFidoGenCeAaguid, 'sub[1].sub[0].sub[0]');
-      if (this.result.aaguid && !FormatBase.isEqualBinary(oidFidoGenCeAaguid, this.result.aaguid.buffer)) {
+      if (this.result.aaguid && !EqualUtils.equalBinary(oidFidoGenCeAaguid, this.result.aaguid.buffer)) {
         throw new FslFormatVerifyError(
           'aikCert extension id-fido-gen-ce-aaguid is not equal to aaguid in authenticatorData.',
           TpmFormat.getName()
@@ -381,10 +383,7 @@ class TpmFormat extends FormatBase {
 
     // signature
     if (this.certInfo == null || this.alg == null || this.sig == null || this.x5c == null || this.result == null) {
-      throw new FslFormatVerifyError(
-        `Data is not enough + ${this.certInfo} + ${this.alg} + ${this.sig} + ${this.x5c} + ${this.result}`,
-        TpmFormat.getName()
-      );
+      throw new FslFormatVerifyError('Data is not enough', TpmFormat.getName());
     }
     const isValidSignature = this.verifySignature(this.certInfo, this.alg, aikCertPem, this.sig);
     if (!isValidSignature) {

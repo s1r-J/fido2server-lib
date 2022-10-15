@@ -77,7 +77,7 @@ class AndroidKeyFormat extends FormatBase {
     }
     const attestationChallengeHex = attestationChallengeExt.content().split('\n')[1]; // TODO ugly
     const attestationChallenge = Buffer.from(attestationChallengeHex, 'hex');
-    const isEqualAttestationChallenge = FormatBase.isEqualBinary(this.result.clientDataJSONHash, attestationChallenge);
+    const isEqualAttestationChallenge = EqualUtils.equalBinary(this.result.clientDataJSONHash, attestationChallenge);
     if (!isEqualAttestationChallenge) {
       throw new FslFormatVerifyError(
         'AttestationChallenge is not equal.',
