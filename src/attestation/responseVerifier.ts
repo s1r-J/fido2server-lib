@@ -151,7 +151,7 @@ class AttestationResponseVerifier {
       const expectRpIdHash = crypto.createHash('sha256').update(this.expectation.rpId).digest();
       if (!rpIdHash.equals(expectRpIdHash)) {
         throw new FslAttestationVerifyError(
-          'rpIdHash in response.attestationObject.authData is not equal to created from expectaion',
+          'rpIdHash in response.attestationObject.authData is not equal to created from expectation',
           {
             actual: rpIdHash,
             expect: `${expectRpIdHash} Hashed from ${this.expectation.rpId}`,

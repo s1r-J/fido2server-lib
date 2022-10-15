@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import parseCoseKey from 'parse-cosekey';
 import rs from 'jsrsasign';
 import ConvertUtils from '../util/convertUtils';
-import crypto from 'crypto';
 
 class CertificateUtils {
   private constructor() {
@@ -47,10 +46,6 @@ class CertificateUtils {
     const cosealg = parseCoseKey.CoseKey.COSEAlgorithm.fromValue(alg);
     if (!cosealg) {
       throw new Error('This alg is not supported.: ' + alg);
-    }
-    if (alg === -8) {
-      // TODO EdDSA verification in parse-cosekey module has bug
-      return crypto.verify(null, Buffer.concat([authData, clientDataJSONHash]), pem, sig);
     }
 
     return parseCoseKey.Verifier.verifyWithPEM(
@@ -124,11 +119,15 @@ class CertificateUtils {
           }
           const crl = new rs.X509CRL(crlPEM);
           const revSNs =
-            crl.getRevCertArray().map((revCert) => {
-              return revCert.sn;
+            (crl.getRevCertArray() || []).map((revCert) => {
+              if (revCert.sn == null) {
+                return '';
+              }
+
+              return revCert.sn.hex.toLowerCase();
             }) || [];
 
-          return revSNs;
+          return revSNs.filter((rsn) => rsn !== '');
         })
       )) || [[]];
 
@@ -136,7 +135,7 @@ class CertificateUtils {
     }
 
     const hasRevokedCert = rsCerts.some((c) => {
-      const sn = c.getSerialNumberHex();
+      const sn = c.getSerialNumberHex().toLowerCase();
       return crlSNs.includes(sn);
     });
     if (hasRevokedCert) {

@@ -2,7 +2,6 @@ import crypto from 'crypto';
 import jsrsasign from 'jsrsasign';
 import { FslAttestationResult, FslAttestationExpectation } from '../../../type';
 import FslFormatVerifyError from '../../../error/formatVerifyError';
-import FslUnsupportedError from '../../../error/unsupportedError';
 import FormatBase from '../formatBase';
 import FormatVerifyResult from '../formatVerifyResult';
 import CertificateUtils from '../../../certificate/certificateUtils';
@@ -29,7 +28,7 @@ class FidoU2FFormat extends FormatBase {
 
   async verify(): Promise<FormatVerifyResult> {
     if (!this.result) {
-      throw new FslUnsupportedError('set result.');
+      throw new FslFormatVerifyError('Data is not enough', FidoU2FFormat.getName());
     }
 
     // Verify that attStmt is valid CBOR conforming to the syntax defined above and perform CBOR decoding on it to extract the contained fields.
@@ -71,7 +70,7 @@ class FidoU2FFormat extends FormatBase {
       throw new FslFormatVerifyError('Credential public key x is invalid', FidoU2FFormat.getName());
     }
     const y = coseCredentialPublicKey.get(-3) as Buffer;
-    if (y == null || x.length !== 32) {
+    if (y == null || y.length !== 32) {
       throw new FslFormatVerifyError('Credential public key y is invalid', FidoU2FFormat.getName());
     }
 

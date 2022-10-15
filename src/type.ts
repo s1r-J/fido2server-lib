@@ -358,7 +358,7 @@ export interface FslPublicKeyCredentialRequestOptions {
   rpId?: string;
   allowCredentials?: FslPublicKeyCredentialDescriptor[];
   userVerification?: UserVerificationRequirement;
-  extensions?: AuthenticationExtensionsClientInputs;
+  extensions?: FslAuthenticationExtensionsClientInputs;
 }
 
 export interface FslEncodePublicKeyCredentialRequestOptions {
@@ -367,7 +367,7 @@ export interface FslEncodePublicKeyCredentialRequestOptions {
   rpId?: string;
   allowCredentials?: FslEncodePublicKeyCredentialDescriptor[];
   userVerification?: UserVerificationRequirement;
-  extensions?: AuthenticationExtensionsClientInputs;
+  extensions?: FslAuthenticationExtensionsClientInputs;
 }
 
 export interface FslPublicKeyCredentialDescriptor {

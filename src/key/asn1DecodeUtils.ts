@@ -6,7 +6,7 @@ class Asn1DecodeUtils {
     //
   }
 
-  static decode(text: string): any {
+  static decode(text: string): asn1 {
     const der = base64.unarmor(text);
     const decoded = asn1.decode(der, 0);
     return decoded;

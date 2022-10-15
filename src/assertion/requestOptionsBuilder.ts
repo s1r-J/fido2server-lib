@@ -73,10 +73,10 @@ class AssertionRequestOptionsBuilder {
 
     if (this.options.allowCredentials && this.options.allowCredentials.length > 0) {
       const isValid = this.options.allowCredentials.every((c: FslPublicKeyCredentialDescriptor) => {
-        if (!c.type) {
+        if (c.type == null || c.type !== 'public-key') {
           return false;
         }
-        if (!c.id) {
+        if (c.id == null || c.id.byteLength === 0) {
           return false;
         }
 
@@ -92,7 +92,7 @@ class AssertionRequestOptionsBuilder {
       try {
         ExtensionValidator.validateAuthenticationExtensions(this.options.extensions);
       } catch (error) {
-        errorMessages.push(`PublicKeyCredentialRequestOptions.allowCredentials is not valid: ${error.message}`);
+        errorMessages.push(`PublicKeyCredentialRequestOptions.extensions is not valid: ${error.message}`);
       }
     }
 

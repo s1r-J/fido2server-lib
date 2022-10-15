@@ -2,11 +2,11 @@ import * as x509 from '@peculiar/x509';
 import jsrsasign from 'jsrsasign';
 import { FslAttestationResult, FslAttestationExpectation, FslAttestationType } from '../../../type';
 import FslFormatVerifyError from '../../../error/formatVerifyError';
-import FslUnsupportedError from '../../../error/unsupportedError';
 import FormatBase from '../formatBase';
 import CertificateUtils from '../../../certificate/certificateUtils';
 import FormatVerifyResult from '../formatVerifyResult';
 import MdsVerifier from '../../../mds/mdsVerifier';
+import EqualUtils from '../../../util/equalUtils';
 import str2ab from 'str2ab';
 
 /**
@@ -35,7 +35,7 @@ class PackedFormat extends FormatBase {
 
   async verify(): Promise<FormatVerifyResult> {
     if (!this.result) {
-      throw new FslUnsupportedError('set result.');
+      throw new FslFormatVerifyError('Data is not enough', PackedFormat.getName());
     }
 
     // step1
@@ -149,7 +149,7 @@ class PackedFormat extends FormatBase {
         }
         if (
           !this.result.aaguid ||
-          !FormatBase.isEqualArrayBuffer(str2ab.buffer2arraybuffer(this.result.aaguid.buffer), oidFidoGenCeAaguid.value)
+          !EqualUtils.equalArrayBuffer(str2ab.buffer2arraybuffer(this.result.aaguid.buffer), oidFidoGenCeAaguid.value)
         ) {
           throw new FslFormatVerifyError('AAGUID is not match.', PackedFormat.getName());
         }

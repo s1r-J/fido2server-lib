@@ -16,6 +16,7 @@ class NoneFormat extends FormatBase {
     this.attStmt = attStmt;
     this.result = result;
     this.expectation = expectation;
+    this.configure = config;
   }
 
   async verify(): Promise<FormatVerifyResult> {

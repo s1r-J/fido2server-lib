@@ -44,6 +44,7 @@ class AssertionResponseVerifier {
               expect: this.expectation.userId,
             });
           }
+          result.userHandle = this.credential.response.userHandle;
         }
       } else {
         if (this.credential.response.userHandle) {
@@ -83,7 +84,7 @@ class AssertionResponseVerifier {
         }
         if (
           clientDataJSON.tokenBinding.status == null ||
-          !['present', 'supported', 'not-supported'].includes(clientDataJSON.tokenBinding)
+          !['present', 'supported', 'not-supported'].includes(clientDataJSON.tokenBinding.status)
         ) {
           throw new FslAssertionVerifyError(
             `response.clientDataJSON.tokenBinding.status is invalid: ${clientDataJSON.tokenBinding.status}`
@@ -129,6 +130,7 @@ class AssertionResponseVerifier {
 
       // step14
       if (this.expectation.tokenBinding) {
+        // TODO
         this.verifyTokenBinding(clientData.tokenBinding);
       }
 
@@ -252,7 +254,7 @@ class AssertionResponseVerifier {
       const signatureVerification = verify.verify(credentialPublicKey, str2ab.arraybuffer2buffer(sig));
       if (!signatureVerification) {
         result.verification = false;
-        throw new FslAssertionVerifyError('signature is unverifiable,');
+        throw new FslAssertionVerifyError('signature is unverifiable.');
       }
 
       // step21

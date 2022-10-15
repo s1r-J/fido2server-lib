@@ -4,7 +4,6 @@ import jsrsasign from 'jsrsasign';
 import str2ab from 'str2ab';
 import dayjs from 'dayjs';
 import { FslAttestationResult, FslAttestationExpectation } from '../../../type';
-import FslUnsupportedError from '../../../error/unsupportedError';
 import FslFormatVerifyError from '../../../error/formatVerifyError';
 import FormatVerifyResult from '../formatVerifyResult';
 import FormatBase from '../formatBase';
@@ -30,10 +29,6 @@ class AndroidSafetynetFormat extends FormatBase {
   }
 
   async verify(): Promise<FormatVerifyResult> {
-    if (!this.result) {
-      throw new FslUnsupportedError('set result.');
-    }
-
     // Verify that attStmt is valid CBOR conforming to the syntax defined above and perform CBOR decoding on it to extract the contained fields.
     const decodedAttStmt = this.attStmt;
     const ver: string = decodedAttStmt['ver'];
