@@ -92,7 +92,7 @@ class AssertionRequestOptionsBuilder {
       try {
         ExtensionValidator.validateAuthenticationExtensions(this.options.extensions);
       } catch (error) {
-        errorMessages.push(`PublicKeyCredentialRequestOptions.allowCredentials is not valid: ${error.message}`);
+        errorMessages.push(`PublicKeyCredentialRequestOptions.extensions is not valid: ${error.message}`);
       }
     }
 

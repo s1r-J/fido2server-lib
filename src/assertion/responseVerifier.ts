@@ -253,7 +253,7 @@ class AssertionResponseVerifier {
       const signatureVerification = verify.verify(credentialPublicKey, str2ab.arraybuffer2buffer(sig));
       if (!signatureVerification) {
         result.verification = false;
-        throw new FslAssertionVerifyError('signature is unverifiable,');
+        throw new FslAssertionVerifyError('signature is unverifiable.');
       }
 
       // step21
