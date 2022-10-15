@@ -1,0 +1,8 @@
+# CA certificate
+[ v3_ca ]
+basicConstraints = critical, CA:true
+keyUsage = keyCertSign, cRLSign
+extendedKeyUsage = serverAuth, clientAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+crlDistributionPoints = URI:http://localhost/revoke.crl
