@@ -18,7 +18,7 @@
     "depcheck": "depcheck",
     "eslint": "eslint src/**/*.ts",
     "eslint:fix": "eslint src/**/*.ts --fix",
-    "lint": "npm-run-all eslint check-types",
+    "lint": "npm run eslint && npm run check-types",
     "doc": "typedoc --tsconfig tsconfig.base.json --entryPoints src --entryPointStrategy expand --plugin typedoc-plugin-rename-defaults --out ./docs"
   },
   "keywords": [
@@ -70,7 +70,6 @@
     "eslint-config-prettier": "^8.5.0",
     "gh-pages": "^4.0.0",
     "mockttp": "^3.3.1",
-    "npm-run-all": "^4.1.5",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "sinon": "^14.0.0",
