@@ -38,7 +38,7 @@
   "bugs": {
     "url": "https://github.com/s1r-J/fido2server-lib/issues"
   },
-  "homepage": "https://github.com/s1r-J/fido2server-lib",
+  "homepage": "https://s1r-j.github.io/fido2server-lib",
   "dependencies": {
     "@lapo/asn1js": "^1.2.3",
     "@peculiar/x509": "^1.3.2",
