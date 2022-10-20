@@ -1,0 +1,8 @@
+# chain certificate
+[ v3_server ]
+basicConstraints = critical, CA:false
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+
