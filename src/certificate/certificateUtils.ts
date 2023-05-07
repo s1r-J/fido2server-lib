@@ -59,7 +59,16 @@ class CertificateUtils {
 
   static async verifyCertificateChain(certificatePEMs: string[], rootCertificatePEM?: string): Promise<boolean> {
     const findExtCRLDistributionPoints = function (x509: rs.X509) {
-      const info = x509.getExtInfo('cRLDistributionPoints');
+      let info;
+      // jsrsasign: aExtInfo is null
+      try {
+        info = x509.getExtInfo('cRLDistributionPoints');
+      } catch (err) {
+        if (err.name === 'TypeError' && err.message === "Cannot read properties of null (reading 'length')") {
+          return undefined;
+        }
+        throw err;
+      }
       if (info === undefined) {
         return undefined;
       }
